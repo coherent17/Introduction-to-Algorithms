@@ -12,11 +12,13 @@ void insertion_sort(int *array, int size){
         int key = array[i];
 
         int index = i - 1;
+
+        //insert key into the sorted sequence array[0 .. i - 1]
         while(index >= 0 && array[index] > key){
             array[index + 1] = array[index];
             index = index - 1;
         }
-        array[index + 1] = key;
+        array[index + 1] = key;     //insert the key
         printArray(array, size);
     }
 }
