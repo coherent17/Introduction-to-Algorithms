@@ -11,6 +11,9 @@ all: $(BIN)
 $(BIN): 0811562.cpp
 	$(CC) $(CXXFLAGS) $< -o $@
 
+check0:
+	$(CHECKCC) $(CHECKFLAGS) ./$(BIN) Test\ Case/sample.txt
+
 check1:
 	$(CHECKCC) $(CHECKFLAGS) ./$(BIN) Test\ Case/case1.txt
 
@@ -19,6 +22,9 @@ check2:
 
 check3:
 	$(CHECKCC) $(CHECKFLAGS) ./$(BIN) Test\ Case/case3.txt
+
+do0:
+	./$(BIN) Test\ Case/sample.txt
 
 do1:
 	./$(BIN) Test\ Case/case1.txt
