@@ -51,6 +51,19 @@ int main(int argc, char *argv[]){
     printf("%d %d %d %d\n", N, A, B, R_size);
     printArray(R, R_size);
 
+    int *dp1 = (int *)malloc(sizeof(int) * N);
+    int *dp2 = (int *)malloc(sizeof(int) * N);
+
+    int no_resting_day = 1;
+
+    //base case:
+    dp1[0] = A - B;
+    dp2[0] = 0 - R[0];
+
+    //dp
+    for(int i = 1; i < N; i++){
+        if(dp1[i] + A - (no_resting_day + 1) * (no_resting_day + 1) * B  >= dp2[i]  )
+    }
 
     free(R);
     return 0;
