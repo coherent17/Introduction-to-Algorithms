@@ -23,6 +23,12 @@ check2:
 check3:
 	$(CHECKCC) $(CHECKFLAGS) ./$(BIN) Test\ Case/case3.txt mycase3.out
 
+checkt1:
+	$(CHECKCC) $(CHECKFLAGS) ./$(BIN) Test\ Case/testcase1.txt testcase1.out
+
+checkt2:
+	$(CHECKCC) $(CHECKFLAGS) ./$(BIN) Test\ Case/testcase2.txt testcase2.out
+
 do0:
 	./$(BIN) Test\ Case/sample.txt mysample.out
 
@@ -34,6 +40,13 @@ do2:
 
 do3:
 	./$(BIN) Test\ Case/case3.txt mycase3.out
+
+t1:
+	./$(BIN) Test\ Case/testcase1.txt testcase1.out
+
+t2:
+	./$(BIN) Test\ Case/testcase2.txt testcase2.out
+
 
 compare:
 	diff -b mycase1.out Test\ Case/golden1.txt
