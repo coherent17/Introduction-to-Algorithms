@@ -2,37 +2,21 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define BUFFER_SIZE 100000
+#define BUFFER_SIZE 10
+typedef long long int llint;
 
-void parser(char *filename, int *Nptr, int *Aptr, int *Bptr, int **R, int *R_sizeptr){
+void parser(char *filename, llint *Nptr, llint *Aptr, llint *Bptr, llint **R){
     FILE *input = fopen(filename, "r");
-    fscanf(input, "%d %d %d", &(*Nptr), &(*Aptr), &(*Bptr));
+    fscanf(input, "%lld %lld %lld", &(*Nptr), &(*Aptr), &(*Bptr));
     fgetc(input);
 
-    char buffer[BUFFER_SIZE];
-    char buffer_copy[BUFFER_SIZE];
-
-    fscanf(input, "%[^\n]", buffer);
-    fgetc(input);
+    *R = (llint *)malloc(sizeof(llint) * (*Nptr));
+    for(int i = 0; i < (*Nptr); i++){
+        char buffer[BUFFER_SIZE];
+        fscanf(input, "%s", buffer);
+        (*R)[i] = atoi(buffer);
+    }
     fclose(input);
-    strncpy(buffer_copy, buffer, strlen(buffer));
-    buffer_copy[strlen(buffer)] = '\0';
-
-    *R_sizeptr = 0;
-    char *token = strtok(buffer, " ");
-    while(token != NULL){
-        (*R_sizeptr) = (*R_sizeptr) + 1;
-        token = strtok(NULL, " ");
-    }
-
-    *R = (int *)malloc(sizeof(int) * (*R_sizeptr));  
-    int index = 0;
-
-    char *temp = strtok(buffer_copy, " ");
-    while(temp != NULL){
-        (*R)[index++] = atoi(temp);
-        temp = strtok(NULL, " ");
-    }
 }
 
 void printArray(int *R, int R_size){
@@ -52,7 +36,7 @@ void getPath(int *path, int *path1, int *path2, int end_in_which, int N){
     }
 }
 
-int *Maximum_Performance(int N, int A, int B, int *R, int R_size, int *result){
+int *Maximum_Performance(llint N, llint A, llint B, llint *R, llint *result){
 
     //dynamic programming to solve the problem:
     
@@ -67,8 +51,8 @@ int *Maximum_Performance(int N, int A, int B, int *R, int R_size, int *result){
     // dp1[i] = max(dp1[i-1] + A - X * X * B, dp2[i-1] + A - B);
     // dp2[i] = max(dp1[i-1] - R[i], dp2[i-1] - R[i]);
 
-    int *dp1 = (int *)malloc(sizeof(int) * N);
-    int *dp2 = (int *)malloc(sizeof(int) * N);
+    llint *dp1 = (llint *)malloc(sizeof(llint) * N);
+    llint *dp2 = (llint *)malloc(sizeof(llint) * N);
 
     //record the path:
     int *path1 = (int *)malloc(sizeof(int) * N);
@@ -78,7 +62,7 @@ int *Maximum_Performance(int N, int A, int B, int *R, int R_size, int *result){
     dp1[0] = 0 + A - 1 * 1 * B;
     dp2[0] = 0 - R[0];
 
-    int no_resting_day = 1;
+    llint no_resting_day = 1;
 
     for(int i = 1; i < N; i++){
         if(dp1[i - 1] + A - (no_resting_day + 1) * (no_resting_day + 1) * B  >= dp2[i - 1] + A - B){
@@ -135,12 +119,10 @@ void outputAnswer(char *outputname, int *path, int result, int N){
 
 int main(int argc, char *argv[]){
 
-    int N, A, B;
-    int *R = NULL;
-    int R_size;
-    int result;
-    parser(argv[1], &N, &A, &B, &R, &R_size);
-    int *path = Maximum_Performance(N, A, B, R, R_size, &result);
+    llint N, A, B, result;
+    llint *R = NULL;
+    parser(argv[1], &N, &A, &B, &R);
+    int *path = Maximum_Performance(N, A, B, R, &result);
     outputAnswer(argv[2], path, result, N);
 
     free(path);
