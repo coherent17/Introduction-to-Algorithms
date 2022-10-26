@@ -12,28 +12,33 @@ $(BIN): 0811562.cpp
 	$(CC) $(CXXFLAGS) $< -o $@
 
 check0:
-	$(CHECKCC) $(CHECKFLAGS) ./$(BIN) Test\ Case/sample.txt
+	$(CHECKCC) $(CHECKFLAGS) ./$(BIN) Test\ Case/sample.txt mysample.out
 
 check1:
-	$(CHECKCC) $(CHECKFLAGS) ./$(BIN) Test\ Case/case1.txt
+	$(CHECKCC) $(CHECKFLAGS) ./$(BIN) Test\ Case/case1.txt mycase1.out
 
 check2:
-	$(CHECKCC) $(CHECKFLAGS) ./$(BIN) Test\ Case/case2.txt
+	$(CHECKCC) $(CHECKFLAGS) ./$(BIN) Test\ Case/case2.txt mycase2.out
 
 check3:
-	$(CHECKCC) $(CHECKFLAGS) ./$(BIN) Test\ Case/case3.txt
+	$(CHECKCC) $(CHECKFLAGS) ./$(BIN) Test\ Case/case3.txt mycase3.out
 
 do0:
-	./$(BIN) Test\ Case/sample.txt
+	./$(BIN) Test\ Case/sample.txt mysample.out
 
 do1:
-	./$(BIN) Test\ Case/case1.txt
+	./$(BIN) Test\ Case/case1.txt mycase1.out
 
 do2:
-	./$(BIN) Test\ Case/case2.txt
+	./$(BIN) Test\ Case/case2.txt mycase2.out
 
 do3:
-	./$(BIN) Test\ Case/case3.txt
+	./$(BIN) Test\ Case/case3.txt mycase3.out
+
+compare:
+	diff -b mycase1.out Test\ Case/golden1.txt
+	diff -b mycase2.out Test\ Case/golden2.txt
+	diff -b mycase3.out Test\ Case/golden3.txt
 
 clean:
-	rm $(BIN)
+	rm $(BIN) *.out
