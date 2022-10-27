@@ -105,10 +105,10 @@ int *Maximum_Performance(llint N, llint A, llint B, llint *R, llint *result){
     return path;
 }
 
-void outputAnswer(char *outputname, int *path, int result, int N){
+void outputAnswer(char *outputname, int *path, llint result, int N){
     FILE *output = fopen(outputname, "w");
 
-    fprintf(output, "%d\n", result);
+    fprintf(output, "%lld\n", result);
 
     for(int i = N-1; i >= 0; i--){
         fprintf(output, "%d ", path[i]);
