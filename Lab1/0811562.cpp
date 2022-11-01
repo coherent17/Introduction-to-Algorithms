@@ -19,13 +19,6 @@ void parser(char *filename, llint *Nptr, llint *Aptr, llint *Bptr, llint **R){
     fclose(input);
 }
 
-void printArray(int *R, int R_size){
-    for(int i = 0; i < R_size; i++){
-        printf("%d ", R[i]);
-    }
-    printf("\n");
-}
-
 void getPath(int *path, int *path1, int *path2, int end_in_which, int N){
     int index = 0;
     path[index++] = end_in_which == 1 ? 1 : 0;
@@ -37,19 +30,6 @@ void getPath(int *path, int *path1, int *path2, int end_in_which, int N){
 }
 
 int *Maximum_Performance(llint N, llint A, llint B, llint *R, llint *result){
-
-    //dynamic programming to solve the problem:
-    
-    //define dp1[i] : maximum performance if the ith day exercise
-    //define dp2[i] : maximum performance if the ith day rest
-
-    //base case:
-    //dp1[0] = 0 + A - 1 * 1 * B
-    //dp2[0] = 0 - R[0]
-
-    //transition function:
-    // dp1[i] = max(dp1[i-1] + A - X * X * B, dp2[i-1] + A - B);
-    // dp2[i] = max(dp1[i-1] - R[i], dp2[i-1] - R[i]);
 
     llint *dp1 = (llint *)malloc(sizeof(llint) * N);
     llint *dp2 = (llint *)malloc(sizeof(llint) * N);
