@@ -45,7 +45,7 @@ int *Maximum_Performance(llint N, llint A, llint B, llint *R, llint *result){
     llint no_resting_day = 1;
 
     for(int i = 1; i < N; i++){
-        if(dp1[i - 1] + A - (no_resting_day + 1) * (no_resting_day + 1) * B  >= dp2[i - 1] + A - B){
+        if(dp1[i - 1] + A - (no_resting_day + 1) * (no_resting_day + 1) * B  > dp2[i - 1] + A - B){
             dp1[i] = dp1[i - 1] + A - (no_resting_day + 1) * (no_resting_day + 1) * B;
             no_resting_day++;
             path1[i-1] = 1;
@@ -56,7 +56,7 @@ int *Maximum_Performance(llint N, llint A, llint B, llint *R, llint *result){
             path1[i-1] = 2;
         }
 
-        if(dp1[i - 1] - R[i] >= dp2[i - 1] - R[i]){
+        if(dp1[i - 1] - R[i] > dp2[i - 1] - R[i]){
             dp2[i] = dp1[i - 1] - R[i];
             path2[i-1] = 1;
         }
