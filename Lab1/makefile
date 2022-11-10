@@ -7,26 +7,29 @@ BIN = Lab1
 
 all: $(BIN)
 
-$(BIN): new.c
+$(BIN): 0811562.cpp
 	$(CC) $(CXXFLAGS) $< -o $@
 
 check:
 	$(CHECKCC) $(CHECKFLAGS) ./$(BIN) Test\ Case/sample.txt mysample.out
 
 runall:
-	./$(BIN) Test\ Case/sample.txt mysample.out
-	./$(BIN) Test\ Case/case1.txt mycase1.out
-	./$(BIN) Test\ Case/case2.txt mycase2.out
-	./$(BIN) Test\ Case/case3.txt mycase3.out
-	./$(BIN) Test\ Case/testcase1.txt testcase1.out
-	./$(BIN) Test\ Case/testcase2.txt testcase2.out
-	./$(BIN) Test\ Case/testcase3.txt testcase3.out
-	./$(BIN) Test\ Case/testcase4.txt testcase4.out
+	./$(BIN) Testcase/case1.txt Testcase/1.out
+	./$(BIN) Testcase/case2.txt Testcase/2.out
+	./$(BIN) Testcase/case3.txt Testcase/3.out
+	./$(BIN) Testcase/case4.txt Testcase/4.out
+	./$(BIN) Testcase/case5.txt Testcase/5.out
+	./$(BIN) Testcase/case6.txt Testcase/6.out
+	./$(BIN) Testcase/case7.txt Testcase/7.out
 
 compare:
-	diff -b mycase1.out Test\ Case/golden1.txt
-	diff -b mycase2.out Test\ Case/golden2.txt
-	diff -b mycase3.out Test\ Case/golden3.txt
+	diff -b Testcase/1.out Testcase/golden_case1.txt
+	diff -b Testcase/2.out Testcase/golden_case2.txt
+	diff -b Testcase/3.out Testcase/golden_case3.txt
+	diff -b Testcase/4.out Testcase/golden_case4.txt
+	diff -b Testcase/5.out Testcase/golden_case5.txt
+	diff -b Testcase/6.out Testcase/golden_case6.txt
+	diff -b Testcase/7.out Testcase/golden_case7.txt
 
 clean:
-	rm $(BIN) *.out
+	rm $(BIN) Testcase/*.out
