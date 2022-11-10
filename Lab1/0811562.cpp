@@ -3,109 +3,127 @@
 #include <string.h>
 
 #define BUFFER_SIZE 10
+#define LLINT_MIN -9223372036854775807
+#define NEG_INF LLINT_MIN
 typedef long long int llint;
 
-void parser(char *filename, llint *Nptr, llint *Aptr, llint *Bptr, llint **R){
+llint max(llint a, llint b){
+    return a > b ? a : b;
+}
+
+void parser(char *filename, llint *Nptr, llint *Aptr, llint *Bptr, llint **R, llint *R_max){
     FILE *input = fopen(filename, "r");
     fscanf(input, "%lld %lld %lld", &(*Nptr), &(*Aptr), &(*Bptr));
     fgetc(input);
 
-    *R = (llint *)malloc(sizeof(llint) * (*Nptr));
-    for(int i = 0; i < (*Nptr); i++){
+    *R = (llint *)malloc(sizeof(llint) * ((*Nptr) + 1));
+    *R_max = -1;
+    int i;
+    for(i = 1; i <= (*Nptr); i++){
         char buffer[BUFFER_SIZE];
         fscanf(input, "%s", buffer);
         (*R)[i] = atoi(buffer);
+        (*R_max) = max((*R_max), atoi(buffer));
     }
     fclose(input);
 }
 
-void getPath(int *path, int *path1, int *path2, int end_in_which, int N){
-    int index = 0;
-    path[index++] = end_in_which == 1 ? 1 : 0;
-    for(int i = N-2; i >= 0; i--){
-        if(end_in_which == 1) end_in_which = path1[i];
-        else end_in_which = path2[i];
-        path[index++] = end_in_which == 1 ? 1 : 0;
-    }
-}
 
-int *Maximum_Performance(llint N, llint A, llint B, llint *R, llint *result){
+int *Maximum_Performance(llint N, llint A, llint B, llint *R, llint *result, llint R_max){
 
-    llint *dp1 = (llint *)malloc(sizeof(llint) * N);
-    llint *dp2 = (llint *)malloc(sizeof(llint) * N);
+    llint *cw = (llint *)malloc(sizeof(llint) * (N + 1));       //continue working performance
+    llint *r = (llint *)malloc(sizeof(llint) * (N + 1));        //best rest performance
+    int *cut = (int *)malloc(sizeof(int) * (N + 1));            //record when to work continuesly on r[i]
+    int *path = (int *)malloc(sizeof(int) * (N + 1));           //final path
 
-    //record the path:
-    int *path1 = (int *)malloc(sizeof(int) * N);
-    int *path2 = (int *)malloc(sizeof(int) * N);
-    int *path = (int *)malloc(sizeof(int) * N);
+    int i, j;
 
-    dp1[0] = 0 + A - 1 * 1 * B;
-    dp2[0] = 0 - R[0];
-
-    llint no_resting_day = 1;
-
-    for(int i = 1; i < N; i++){
-        if(dp1[i - 1] + A - (no_resting_day + 1) * (no_resting_day + 1) * B  > dp2[i - 1] + A - B){
-            dp1[i] = dp1[i - 1] + A - (no_resting_day + 1) * (no_resting_day + 1) * B;
-            no_resting_day++;
-            path1[i-1] = 1;
-        }
-        else{
-            dp1[i] = dp2[i - 1] + A - B;
-            no_resting_day = 1;
-            path1[i-1] = 2;
-        }
-
-        if(dp1[i - 1] - R[i] > dp2[i - 1] - R[i]){
-            dp2[i] = dp1[i - 1] - R[i];
-            path2[i-1] = 1;
-        }
-        else{
-            dp2[i] = dp2[i - 1] - R[i];
-            path2[i-1] = 2;
-        }
+    for(i = 0; i <= N; i++){
+        r[i] = NEG_INF;
+        path[i] = 1;
     }
 
-    int end_in_which;
-    if(dp1[N-1] > dp2[N-1]){
-        *result = dp1[N-1];
-        end_in_which = 1; 
+
+    //base case
+    cw[0] = 0;
+    cw[1] = A - B;
+
+    r[0] = 0;
+    r[1] = 0 - R[1];
+
+    cut[0] = -2;
+    cut[1] = 0;
+
+    for(i = 2; i <= N; i++){    
+        cw[i] = cw[i - 1] + A - i * i * B;                  //calculate the performance of continous work
+        for(j = 0; j <= i - 1; j++){
+
+            //early return condition:
+            if(cw[j] < -1 * R_max * N) break;               //continue to work can't have larger performance, break it
+
+
+            if(cw[j] + r[i - j - 1] > r[i]){
+                //get the maximum value of best performance of rest i-j-1 day and work j days
+                r[i] = cw[j] + r[i - j - 1];
+                cut[i] = i - j  - 1;
+            }
+        }
+        r[i]  = r[i] - R[i]; 
+    }
+
+    llint wn = NEG_INF;
+    //construct best work performance on day N
+    int end = -1;
+    for(int i = 1; i <= N; i++){
+        if(r[N-i] + cw[i] > wn){
+            wn = r[N-i] + cw[i];
+            end = N-i;
+        }
+    }
+
+
+    if(wn > r[N]){
+        *result = wn;
     }
     else{
-        *result = dp2[N-1];
-        end_in_which = 2;
+        *result = r[N];
+        path[N] = 0;
+        end = cut[N];
     }
 
-    getPath(path, path1, path2, end_in_which, N);
+    //mark the day that no work
+    while(end != -2){
+        path[end] = 0;
+        end = cut[end];
+    }
 
-    free(dp1);
-    free(dp2);
-    free(path1);
-    free(path2);
+
+    free(cw);
+    free(r);
+    free(cut);
     return path;
 }
 
-void outputAnswer(char *outputname, int *path, llint result, int N){
-    FILE *output = fopen(outputname, "w");
+void OutputAnswer(char *filename, int *path, llint result, int N){
+    FILE *out = fopen(filename, "w");
+    fprintf(out, "%lld\n", result);
 
-    fprintf(output, "%lld\n", result);
-
-    for(int i = N-1; i >= 0; i--){
-        fprintf(output, "%d ", path[i]);
+    for(int i = 1; i <= N; i++){
+        fprintf(out, "%d ", path[i]);
     }
-    fclose(output);
 }
+
 
 
 int main(int argc, char *argv[]){
 
-    llint N, A, B, result;
+    llint N, A, B, R_max, result;
     llint *R = NULL;
-    parser(argv[1], &N, &A, &B, &R);
-    int *path = Maximum_Performance(N, A, B, R, &result);
-    outputAnswer(argv[2], path, result, N);
+    parser(argv[1], &N, &A, &B, &R, &R_max);
+    int *path = Maximum_Performance(N, A, B, R, &result, R_max);
+    OutputAnswer(argv[2], path, result, N);
 
-    free(path);
     free(R);
+    free(path);
     return 0;
 }

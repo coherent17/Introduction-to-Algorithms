@@ -7,7 +7,7 @@ BIN = Lab1
 
 all: $(BIN)
 
-$(BIN): 0811562.cpp
+$(BIN): new.c
 	$(CC) $(CXXFLAGS) $< -o $@
 
 check:
