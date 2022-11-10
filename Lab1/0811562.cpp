@@ -7,10 +7,6 @@
 #define NEG_INF LLINT_MIN
 typedef long long int llint;
 
-llint max(llint a, llint b){
-    return a > b ? a : b;
-}
-
 void parser(char *filename, llint *Nptr, llint *Aptr, llint *Bptr, llint **R, llint *R_max){
     FILE *input = fopen(filename, "r");
     fscanf(input, "%lld %lld %lld", &(*Nptr), &(*Aptr), &(*Bptr));
@@ -23,7 +19,7 @@ void parser(char *filename, llint *Nptr, llint *Aptr, llint *Bptr, llint **R, ll
         char buffer[BUFFER_SIZE];
         fscanf(input, "%s", buffer);
         (*R)[i] = atoi(buffer);
-        (*R_max) = max((*R_max), atoi(buffer));
+        (*R_max) = (*R_max) > atoi(buffer) ? (*R_max) : atoi(buffer);
     }
     fclose(input);
 }
@@ -36,9 +32,7 @@ int *Maximum_Performance(llint N, llint A, llint B, llint *R, llint *result, lli
     int *cut = (int *)malloc(sizeof(int) * (N + 1));            //record when to work continuesly on r[i]
     int *path = (int *)malloc(sizeof(int) * (N + 1));           //final path
 
-    int i, j;
-
-    for(i = 0; i <= N; i++){
+    for(int i = 0; i <= N; i++){
         r[i] = NEG_INF;
         path[i] = 1;
     }
@@ -54,9 +48,9 @@ int *Maximum_Performance(llint N, llint A, llint B, llint *R, llint *result, lli
     cut[0] = -2;
     cut[1] = 0;
 
-    for(i = 2; i <= N; i++){    
+    for(int i = 2; i <= N; i++){    
         cw[i] = cw[i - 1] + A - i * i * B;                  //calculate the performance of continous work
-        for(j = 0; j <= i - 1; j++){
+        for(int j = 0; j <= i - 1; j++){
 
             //early return condition:
             if(cw[j] < -1 * R_max * N) break;               //continue to work can't have larger performance, break it
