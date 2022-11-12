@@ -114,6 +114,25 @@ int main(int argc, char *argv[]){
     llint N, A, B, R_max, result;
     llint *R = NULL;
     parser(argv[1], &N, &A, &B, &R, &R_max);
+
+    if(N == 1){
+        FILE *output = fopen(argv[2], "w");
+        
+        llint r = 0 - R[1];
+        llint w = A - B;
+        if(r > w){
+            fprintf(output, "%lld\n", r);
+            fprintf(output, "0");
+        }
+        else{
+            fprintf(output, "%lld\n", w);
+            fprintf(output, "1");
+        }
+        fclose(output);
+        free(R);
+        return 0;
+    }
+
     int *path = Maximum_Performance(N, A, B, R, &result, R_max);
     OutputAnswer(argv[2], path, result, N);
 

@@ -21,6 +21,8 @@ runall:
 	./$(BIN) Testcase/case5.txt Testcase/5.out
 	./$(BIN) Testcase/case6.txt Testcase/6.out
 	./$(BIN) Testcase/case7.txt Testcase/7.out
+	./$(BIN) Testcase/case8.txt Testcase/8.out
+	./$(BIN) Testcase/case9.txt Testcase/9.out
 
 compare:
 	diff -b Testcase/1.out Testcase/golden_case1.txt
@@ -30,6 +32,8 @@ compare:
 	diff -b Testcase/5.out Testcase/golden_case5.txt
 	diff -b Testcase/6.out Testcase/golden_case6.txt
 	diff -b Testcase/7.out Testcase/golden_case7.txt
+	diff -b Testcase/8.out Testcase/golden_case8.txt
+	diff -b Testcase/9.out Testcase/golden_case9.txt
 
 clean:
 	rm $(BIN) Testcase/*.out
