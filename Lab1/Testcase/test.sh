@@ -2,7 +2,7 @@
 
 CPP=$1
 g++ -std=c++11 ${CPP} -o a.out
-for i in {1..7};do
+for i in {1..9};do
     echo "case ${i} testing"
     time ./a.out case${i}.txt out${i}
     differ=$(diff -b out${i} golden_case${i}.txt | wc -w)
