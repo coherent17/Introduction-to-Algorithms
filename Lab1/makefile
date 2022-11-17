@@ -35,14 +35,14 @@ runtest:
 	./$(BIN) HiddenCase/big_case2.txt HiddenCase/7.out
 	./$(BIN) HiddenCase/big_case3.txt HiddenCase/8.out
 
-	diff -b HiddenCase/1.out HiddenCase/small_golden1.txt
-	diff -b HiddenCase/2.out HiddenCase/small_golden2.txt
-	diff -b HiddenCase/3.out HiddenCase/small_golden3.txt
-	diff -b HiddenCase/4.out HiddenCase/small_golden4.txt
-	diff -b HiddenCase/5.out HiddenCase/small_golden5.txt
-	diff -b HiddenCase/6.out HiddenCase/big_golden1.txt
-	diff -b HiddenCase/7.out HiddenCase/big_golden2.txt
-	diff -b HiddenCase/8.out HiddenCase/big_golden3.txt
+	diff -b HiddenCase/1.out HiddenCase/small_golden1.txt > 1.log
+	diff -b HiddenCase/2.out HiddenCase/small_golden2.txt > 2.log
+	diff -b HiddenCase/3.out HiddenCase/small_golden3.txt > 3.log
+	diff -b HiddenCase/4.out HiddenCase/small_golden4.txt > 4.log
+	diff -b HiddenCase/5.out HiddenCase/small_golden5.txt > 5.log
+	diff -b HiddenCase/6.out HiddenCase/big_golden1.txt > 6.log
+	diff -b HiddenCase/7.out HiddenCase/big_golden2.txt > 7.log
+	diff -b HiddenCase/8.out HiddenCase/big_golden3.txt > 8.log
 
 
 compare:
@@ -57,4 +57,4 @@ compare:
 	diff -b Testcase/9.out Testcase/golden_case9.txt
 
 clean:
-	rm $(BIN) Testcase/*.out
+	rm $(BIN) Testcase/*.out HiddenCase/*.out *.log
