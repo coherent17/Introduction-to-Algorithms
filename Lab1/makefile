@@ -34,6 +34,7 @@ runtest:
 	./$(BIN) HiddenCase/big_case1.txt HiddenCase/6.out
 	./$(BIN) HiddenCase/big_case2.txt HiddenCase/7.out
 	./$(BIN) HiddenCase/big_case3.txt HiddenCase/8.out
+	./$(BIN) HiddenCase/big_case4.txt HiddenCase/9.out
 
 	diff -b HiddenCase/1.out HiddenCase/small_golden1.txt > 1.log
 	diff -b HiddenCase/2.out HiddenCase/small_golden2.txt > 2.log
@@ -43,7 +44,7 @@ runtest:
 	diff -b HiddenCase/6.out HiddenCase/big_golden1.txt > 6.log
 	diff -b HiddenCase/7.out HiddenCase/big_golden2.txt > 7.log
 	diff -b HiddenCase/8.out HiddenCase/big_golden3.txt > 8.log
-
+	diff -b HiddenCase/9.out HiddenCase/big_golden3.txt > 9.log
 
 compare:
 	diff -b Testcase/1.out Testcase/golden_case1.txt
