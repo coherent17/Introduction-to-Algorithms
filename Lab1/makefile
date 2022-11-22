@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 CC = g++
 CXXFLAGS = -g -Wall
 CHECKCC = valgrind
