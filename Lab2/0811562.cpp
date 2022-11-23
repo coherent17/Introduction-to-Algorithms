@@ -1,8 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <iostream>
-#include <algorithm>
+#include <stdbool.h>
 #include <vector>
+#include <queue>
+
+#define ABSOLUTE_PARENT -1
+#define EMPTY_RANK 0
 
 using namespace std;
 
@@ -22,21 +25,50 @@ typedef struct _edge{
     int v;
 }edge;
 
+typedef struct _node{
+    int parent;
+    int rank;
+}node;
+
 int abs(int x){
     return x >= 0 ? x : -x;
 }
 
-int find(int *parent, int i) {
-    return parent[i] < 0 ? i : parent[i] = find(parent, parent[i]);
+//path compression
+int DS_Find(node *disjointSetArray, int v){
+	if(disjointSetArray[v].parent == ABSOLUTE_PARENT) return v;
+	return DS_Find(disjointSetArray, disjointSetArray[v].parent);
 }
 
-struct larger{
+void DS_Union(node *disjointSetArray, int fromParent,int toParent){
+
+	if(disjointSetArray[fromParent].rank > disjointSetArray[toParent].rank)
+		disjointSetArray[toParent].parent = fromParent;
+	else if(disjointSetArray[fromParent].rank < disjointSetArray[toParent].rank)
+		disjointSetArray[fromParent].parent = toParent;
+	else{
+		disjointSetArray[fromParent].parent = toParent;
+		disjointSetArray[toParent].rank +=1;
+	}
+}
+
+bool hasCycle(node *disjointSetArray, element e){
+
+	int fromParent = DS_Find(disjointSetArray, e.x);
+	int toParent = DS_Find(disjointSetArray, e.y);
+
+	if(fromParent == toParent) return true;
+	DS_Union(disjointSetArray, fromParent, toParent);
+	return false;
+}
+
+struct cmp{
     bool operator()(element& a, element& b) const{
         return (a.weight > b.weight);
     }
 };
 
-vector<element> parser(char *filename, int *nptr){
+int **parser(char *filename, int *nptr){
     FILE *input = fopen(filename, "r");
     fscanf(input, "%d", &(*nptr));
     point *points = (point *)malloc(sizeof(point) * (*nptr));
@@ -65,58 +97,41 @@ vector<element> parser(char *filename, int *nptr){
     }
 
     fclose(input);
-
-    vector<element> elements;
-
-    for (int i = 0; i < *nptr; i++){
-        for (int j = i + 1; j < *nptr; j++) {
-            elements.push_back({matrix[i][j], i, j});
-        }
-    }
-
-    for(int i = 0; i < (*nptr); i++){
-        free(matrix[i]);
-    }
-    free(matrix);
     free(points);
-    return elements;
+    return matrix;
 }
 
-void Kruskal(vector<element> elements, int n, int *cost, vector <edge>& addEdges){
+void Kruskal(int **matrix, int n, int *cost, vector <edge>& addEdges){
 
+    int MST_edges = 0;
     *cost= 0;
-    int *parent = (int *)malloc(sizeof(int) * n);
+    node *disjointSetArray = (node *)malloc(sizeof(node) * n);
+    //init for parent and rank
     for(int i = 0; i < n; i++){
-        parent[i] = -1;
+        disjointSetArray[i].parent = ABSOLUTE_PARENT;
+        disjointSetArray[i].rank = EMPTY_RANK;
     }
+    
 
-    make_heap(elements.begin(), elements.end(), larger());
+    //make min heap
+    priority_queue <element, vector<element>, cmp> pq;
 
-    while (!elements.empty()) {
-        pop_heap(begin(elements), end(elements), larger());
-        auto ele = elements.back();
-        int w = ele.weight;
-        int u = ele.x;
-        int v = ele.y;
-        int i = ele.x;
-        int j = ele.y;
-        elements.pop_back();
-        i = find(parent, i), j = find(parent, j);
-        if (i != j) {
-            if(w != 0){
-                edge temp;
-                temp.u = u;
-                temp.v = v;
-                addEdges.push_back(temp);
-            }
-            *cost += w;
-            parent[i] += parent[j];
-            parent[j] = i;
-            if (parent[i] == -n)
-                break;
+    for (int i = 0; i < n; i++){
+        for (int j = i + 1; j < n; j++) {
+            pq.push({matrix[i][j], i, j});
         }
     }
-    free(parent);
+
+    while(!pq.empty() && MST_edges < n - 1){
+        element current = pq.top();
+        pq.pop();
+
+        if(!hasCycle(disjointSetArray, current)){
+            *cost += current.weight;
+            if(current.weight != 0) addEdges.push_back({current.x, current.y});
+        }
+    }
+    free(disjointSetArray);
 }
 
 void outputResult(char *filename, int cost, vector <edge> &addEdges){
@@ -125,16 +140,24 @@ void outputResult(char *filename, int cost, vector <edge> &addEdges){
     for(int i = 0; i < (int)addEdges.size(); i++){
         fprintf(output, "%d %d\n", addEdges[i].u, addEdges[i].v);
     }
+    fclose(output);
+}
+
+void freeMatrix(int **matrix, int n){
+    for(int i = 0; i < n; i++){
+        free(matrix[i]);
+    }
+    free(matrix);
 }
 
 
 int main(int argc, char *argv[]){
     int n;
-    vector <element> elements = parser(argv[1], &n);
-
+    int **matrix = parser(argv[1], &n);
     int cost;
     vector <edge> addEdges;
-    Kruskal(elements, n, &cost, addEdges);
+    Kruskal(matrix, n, &cost, addEdges);
     outputResult(argv[2], cost, addEdges);
+    freeMatrix(matrix, n);
     return 0;
 }

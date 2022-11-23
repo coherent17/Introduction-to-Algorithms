@@ -1,5 +1,5 @@
 CC = g++
-CXXFLAGS = -g -Wall
+CXXFLAGS = -g -Wall -std=c++11
 CHECKCC = valgrind
 CHECKFLAGS = --leak-check=full --show-leak-kinds=all -s --track-origins=yes
 
