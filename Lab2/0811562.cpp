@@ -17,12 +17,17 @@ typedef struct _element{
     int y;
 }element;
 
+typedef struct _edge{
+    int u;
+    int v;
+}edge;
+
 int abs(int x){
     return x >= 0 ? x : -x;
 }
 
-int find(vector<int> &ds, int i) {
-    return ds[i] < 0 ? i : ds[i] = find(ds, ds[i]);
+int find(int *parent, int i) {
+    return parent[i] < 0 ? i : parent[i] = find(parent, parent[i]);
 }
 
 struct larger{
@@ -31,66 +36,105 @@ struct larger{
     }
 };
 
-void parser(char *filename, int *nptr, point **points){
+vector<element> parser(char *filename, int *nptr){
     FILE *input = fopen(filename, "r");
     fscanf(input, "%d", &(*nptr));
-    *points = (point *)malloc(sizeof(point) * (*nptr));
+    point *points = (point *)malloc(sizeof(point) * (*nptr));
     for(int i = 0; i < *nptr; i++){
-        fscanf(input, "%d %d", &((*points)[i].x), &((*points)[i].y));
+        fscanf(input, "%d %d", &(points[i].x), &(points[i].y));
     }
 
-    int res = 0;
-    vector<int> ds(*nptr, -1);
-    vector<element> elements;
+    int **matrix = (int **)malloc(sizeof(int *) * (*nptr));
+    for(int i = 0; i < (*nptr); i++){
+        matrix[i] = (int *)malloc(sizeof(int) * (*nptr));
+    }
 
-    //calculate the manhattan disatnce for each node
-    for (int i = 0; i < *nptr; i++){
-        for (int j = i + 1; j < *nptr; j++) {
-            elements.push_back({abs((*points)[i].x - (*points)[j].x) + abs((*points)[i].y - (*points)[j].y), i, j});
+    for(int i = 0; i < (*nptr); i++){
+        for(int j = i + 1; j < (*nptr); j++){
+            int distance = abs(points[i].x - points[j].x) + abs(points[i].y - points[j].y);
+            matrix[i][j] = distance;
+            matrix[j][i] = distance;
         }
     }
 
     //for those originally exist routing segment, set the weight to 0
     int i, j;
     while(fscanf(input, "%d %d", &i, &j) != EOF){
-        elements.push_back({0, i, j});
+        matrix[i][j] = 0;
+        matrix[j][i] = 0;
     }
-    
+
+    fclose(input);
+
+    vector<element> elements;
+
+    for (int i = 0; i < *nptr; i++){
+        for (int j = i + 1; j < *nptr; j++) {
+            elements.push_back({matrix[i][j], i, j});
+        }
+    }
+
+    for(int i = 0; i < (*nptr); i++){
+        free(matrix[i]);
+    }
+    free(matrix);
+    free(points);
+    return elements;
+}
+
+void Kruskal(vector<element> elements, int n, int *cost, vector <edge>& addEdges){
+
+    *cost= 0;
+    int *parent = (int *)malloc(sizeof(int) * n);
+    for(int i = 0; i < n; i++){
+        parent[i] = -1;
+    }
 
     make_heap(elements.begin(), elements.end(), larger());
-
-    for(int i = 0; i < elements.size(); i++){
-        cout << elements[i].weight << endl;
-    }
 
     while (!elements.empty()) {
         pop_heap(begin(elements), end(elements), larger());
         auto ele = elements.back();
-        int dist = ele.weight;
+        int w = ele.weight;
+        int u = ele.x;
+        int v = ele.y;
         int i = ele.x;
         int j = ele.y;
         elements.pop_back();
-        i = find(ds, i), j = find(ds, j);
+        i = find(parent, i), j = find(parent, j);
         if (i != j) {
-            res += dist;
-            ds[i] += ds[j];
-            ds[j] = i;
-            if (ds[i] == -(*nptr))
+            if(w != 0){
+                edge temp;
+                temp.u = u;
+                temp.v = v;
+                addEdges.push_back(temp);
+            }
+            *cost += w;
+            parent[i] += parent[j];
+            parent[j] = i;
+            if (parent[i] == -n)
                 break;
         }
     }
-
-    printf("res = %d\n", res);
-    fclose(input);
+    free(parent);
 }
 
-
+void outputResult(char *filename, int cost, vector <edge> &addEdges){
+    FILE *output = fopen(filename, "w");
+    fprintf(output, "%d\n", cost);
+    for(int i = 0; i < (int)addEdges.size(); i++){
+        fprintf(output, "%d %d\n", addEdges[i].u, addEdges[i].v);
+    }
+}
 
 
 int main(int argc, char *argv[]){
     int n;
-    point *points;
-    parser(argv[1], &n, &points);
-    free(points);
+    vector <element> elements = parser(argv[1], &n);
+
+    int cost;
+    vector <edge> addEdges;
+    Kruskal(elements, n, &cost, addEdges);
+    outputResult(argv[2], cost, addEdges);
     return 0;
 }
