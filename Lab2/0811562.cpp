@@ -37,7 +37,8 @@ int abs(int x){
 //path compression
 int DS_Find(node *disjointSetArray, int v){
 	if(disjointSetArray[v].parent == ABSOLUTE_PARENT) return v;
-	return DS_Find(disjointSetArray, disjointSetArray[v].parent);
+    disjointSetArray[v].parent = DS_Find(disjointSetArray, disjointSetArray[v].parent);
+	return disjointSetArray[v].parent;
 }
 
 void DS_Union(node *disjointSetArray, int fromParent,int toParent){

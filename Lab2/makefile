@@ -14,10 +14,10 @@ verifier:
 	$(CC) $(CXXFLAGS) verifier.cpp -o verifier
 
 runall:
-	./$(BIN) Testcase/case0.txt Testcase/0.out
-	./$(BIN) Testcase/case1.txt Testcase/1.out
-	./$(BIN) Testcase/case2.txt Testcase/2.out
-	./$(BIN) Testcase/case3.txt Testcase/3.out
+	time ./$(BIN) Testcase/case0.txt Testcase/0.out
+	time ./$(BIN) Testcase/case1.txt Testcase/1.out
+	time ./$(BIN) Testcase/case2.txt Testcase/2.out
+	time ./$(BIN) Testcase/case3.txt Testcase/3.out
 
 test:
 	./verifier Testcase/0.out Testcase/golden0.txt
