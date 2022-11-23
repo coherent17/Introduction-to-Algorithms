@@ -34,19 +34,25 @@ int abs(int x){
     return x >= 0 ? x : -x;
 }
 
-//path compression
+//path compression version of find and union for disjoint set
 int DS_Find(node *disjointSetArray, int v){
 	if(disjointSetArray[v].parent == ABSOLUTE_PARENT) return v;
+
+    //also update the parent of vertex to ABSOLUTE_PARENT
     disjointSetArray[v].parent = DS_Find(disjointSetArray, disjointSetArray[v].parent);
 	return disjointSetArray[v].parent;
 }
 
 void DS_Union(node *disjointSetArray, int fromParent,int toParent){
 
+    //rank of new ABSOLUTE_PARENT = max(fromParent.rank, toParent.rank)
 	if(disjointSetArray[fromParent].rank > disjointSetArray[toParent].rank)
 		disjointSetArray[toParent].parent = fromParent;
+
 	else if(disjointSetArray[fromParent].rank < disjointSetArray[toParent].rank)
 		disjointSetArray[fromParent].parent = toParent;
+
+    //if the rank is the same, new rank of ABSOLUTE_PARENT increase by 1
 	else{
 		disjointSetArray[fromParent].parent = toParent;
 		disjointSetArray[toParent].rank +=1;
