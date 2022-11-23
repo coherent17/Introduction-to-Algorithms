@@ -7,13 +7,12 @@
 using namespace std;
 
 namespace std {
-template <> struct hash<std::pair<int, int>> {
-    inline size_t operator()(const std::pair<int, int> &v) const {
-        std::hash<int> int_hasher;
-        return int_hasher(v.first) ^ int_hasher(v.second);
-    }
-};
-
+    template <> struct hash<std::pair<int, int>> {
+        inline size_t operator()(const std::pair<int, int> &v) const {
+            std::hash<int> int_hasher;
+            return int_hasher(v.first) ^ int_hasher(v.second);
+        }
+    };
 }
 
 int main(int argc, char *argv[]){
@@ -24,9 +23,13 @@ int main(int argc, char *argv[]){
     fscanf(in1, "%d", &c1);
     fscanf(in2, "%d", &c2);
 
+    printf("Check for cost:");
     if(c1 != c2){
-        printf("Cost error!\n");
+        printf("Failed!\n");
         return 0;
+    }
+    else{
+        printf("Pass!\n");
     }
 
     unordered_set <pair<int, int>> usp1;
@@ -44,10 +47,27 @@ int main(int argc, char *argv[]){
         usp2.insert(make_pair(v,u));
     }
 
-    
+    printf("Check for MST new edges: ");
+
+    for (const auto &s : usp1) {
+        if(usp2.size() == 0){
+            printf("Failed\n");
+            return 0;
+        }
+        if(usp2.count(make_pair(s.first, s.second))){
+            usp2.erase(make_pair(s.first, s.second));
+        }
+        else{
+            printf("Failed\n");
+            return 0;
+        }
+    }
 
 
-    // if(vp2.size() == 0) printf("Pass\n");
-    // else printf("failed\n");
+    if(usp2.size() == 0) printf("Pass\n");
+    else printf("Failed\n");
+
+    fclose(in1);
+    fclose(in2);
     return 0;
 }

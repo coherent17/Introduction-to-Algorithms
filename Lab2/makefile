@@ -5,18 +5,25 @@ CHECKFLAGS = --leak-check=full --show-leak-kinds=all -s --track-origins=yes
 
 BIN = Lab2
 
-all: $(BIN)
+all: $(BIN) verifier
 
 $(BIN): 0811562.cpp
 	$(CC) $(CXXFLAGS) $< -o $@
 
-do0:
-	./$(BIN) Testcase/case0.txt Testcase/0.out
+verifier:
+	$(CC) $(CXXFLAGS) verifier.cpp -o verifier
 
 runall:
+	./$(BIN) Testcase/case0.txt Testcase/0.out
 	./$(BIN) Testcase/case1.txt Testcase/1.out
 	./$(BIN) Testcase/case2.txt Testcase/2.out
 	./$(BIN) Testcase/case3.txt Testcase/3.out
 
+test:
+	./verifier Testcase/0.out Testcase/golden0.txt
+	./verifier Testcase/1.out Testcase/golden1.txt
+	./verifier Testcase/2.out Testcase/golden2.txt
+	./verifier Testcase/3.out Testcase/golden3.txt
+
 clean:
-	rm $(BIN) Testcase/*.out HiddenCase/*.out *.log
+	rm $(BIN) Testcase/*.out verifier
