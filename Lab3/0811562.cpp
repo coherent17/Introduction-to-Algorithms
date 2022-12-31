@@ -7,6 +7,8 @@
 #define NON_EXIST_PATH -1
 
 int max_cost = 0;
+int max_duration = 60;
+clock_t start_time;
 
 int getIntRandom(int lower, int upper){
 	return (rand() % (upper - lower + 1)) + lower;
@@ -97,6 +99,16 @@ int *getInitialState(int n, int **g){
     NeareestNeighbor(g, n,  visited, path, 0);
     int *initial_state = (int *)malloc(sizeof(int) * n);
     initial_state[0] = 0;
+
+    int countNegative1 = 0; 
+    for(int i = 0; i < n; i++){
+        if(path[i] == -1) countNegative1++;
+    }
+
+    printf("%d", countNegative1);
+    if(countNegative1 >= 2){
+        return NULL;
+    }
 
     int result = path[0];
     int count = 1;
@@ -206,8 +218,6 @@ int *getNeighbor(int *state, int n){
 //f(delta c, T) = min(1, exp(-delta C / T))
 double f(int delta_cost, double Temperature){
 	double temp = -1 * delta_cost / Temperature;
-	// printf("temp = %lf\n", temp);
-	// printf("exp(temp) = %lf\n", exp(temp));
 	return 1 > exp(temp) ? exp(temp) : 1;
 }
 
@@ -240,6 +250,12 @@ int *SimulateAnnealing(int *initial_state, int n, int **g){
 		unsigned long long int new_cost = 0;
 
         for(int i = 0; i < INNER_LOOP_TIMES; i++){
+            clock_t current_time = clock();
+            if(((current_time - start_time) / CLOCKS_PER_SEC) > max_duration - 5){
+                break;
+                canBreak = true;
+            }
+
             int *newState = getNeighbor(*best_state_ptr, n);
             old_cost = getCost(*best_state_ptr, n, g);
             new_cost = getCost(newState, n, g);
@@ -254,9 +270,8 @@ int *SimulateAnnealing(int *initial_state, int n, int **g){
 
             if(accept(new_cost, old_cost, Current_Temperature)){
                 //printf("Accept!\n");
-                free(*best_state_ptr);
                 *best_state_ptr = newState;
-                printf("%lld\n", new_cost);
+                //printf("%lld\n", new_cost);
             }
             else{
                 //printf("Rejected!\n");
@@ -269,20 +284,35 @@ int *SimulateAnnealing(int *initial_state, int n, int **g){
 
 void outputFile(char *filename, int *result, int n, int **g){
     FILE *output = fopen(filename, "w");
+    fprintf(output, "Yes\n");
     fprintf(output, "Path: ");
     for(int i = 0; i < n; i++){
         fprintf(output, "%d ", result[i]);
     }
     fprintf(output, "%d\n", result[0]);
     fprintf(output, "Cost: %lld\n", getCost(result, n, g));
+    fclose(output);
+}
+
+void outputNo(char *filename){
+    FILE *output = fopen(filename, "w");
+    fprintf(output, "No\n");
+    fclose(output);
 }
 
 int main(int argc, char *argv[]){
+    start_time = clock();
     srand(time(NULL));
     int n, m;
     int **g = parser(argv[1], &n, &m);
     int *initial_state = getInitialState(n, g);
-    int *result = SimulateAnnealing(initial_state, n, g);
-    outputFile(argv[2], result, n, g);
+
+    if(initial_state){
+        int *result = SimulateAnnealing(initial_state, n, g);
+        outputFile(argv[2], result, n, g);
+    }
+    else{
+        outputNo(argv[2]);
+    }
     return 0;
 }
