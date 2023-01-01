@@ -60,7 +60,7 @@ void NeareestNeighbor(int **g, int n,  bool *visited, int *path, int start){
     }
 
     visited[start] = true;
-    int min = NON_EXIST_PATH;
+    int min = __INT_MAX__;
     bool flag = false;
     int neighbor = -1;
     for(int i = 0; i < n; i++){
@@ -112,7 +112,7 @@ int *getInitialState(int n, int **g){
         visited[i] = false;
     }
     NeareestNeighbor(g, n,  visited, path, 0);
-    if(path == NULL) return NULL;
+    if(path == NULL) return NULL;   //time out
 
     int *initial_state = (int *)malloc(sizeof(int) * n);
     initial_state[0] = 0;
@@ -351,7 +351,7 @@ void outputNo(char *filename){
 
 int main(int argc, char *argv[]){
     start_time = clock();
-    srand(time(NULL));
+    // srand(time(NULL));
     int n, m;
     int **g = parser(argv[1], &n, &m);
     int *initial_state = getInitialState(n, g);
