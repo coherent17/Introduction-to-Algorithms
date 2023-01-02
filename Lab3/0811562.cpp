@@ -3,10 +3,11 @@
 #include <time.h>
 #include <math.h>
 #include <stdbool.h>
+#include <unistd.h>
 
-#define NON_EXIST_PATH 1000000
+#define NON_EXIST_PATH 10000000
 
-int max_duration = 60;
+int max_duration = 120;
 clock_t start_time;
 
 int getIntRandom(int lower, int upper){
@@ -52,32 +53,44 @@ void printGraph(int **g, int n){
     printf("\n");
 }
 
-void NeareestNeighbor(int **g, int n,  bool *visited, int *path, int start){
-    clock_t current_time = clock();
-    if(((current_time - start_time) / CLOCKS_PER_SEC) > max_duration - 10){
-        path = NULL;
+void NearestNeighbor(int **g, int n, bool *visited, int currPos, int count, int *path, bool *finish){
+
+    if(*finish == true){
         return;
     }
 
-    visited[start] = true;
-    int min = __INT_MAX__;
-    bool flag = false;
-    int neighbor = -1;
+    if(count == n && g[currPos][0] != NON_EXIST_PATH){
+        *finish = true;
+        return;
+    }
+
+    int good_entry = -1;
     for(int i = 0; i < n; i++){
-        if(i != start && visited[i] == false){
-            if(g[start][i] <= min){
-                min = g[start][i];
-                flag = true;
-                neighbor = i;
-                path[start] = neighbor;
+
+        bool *entry = (bool *)malloc(sizeof(bool) * n);
+        for(int i = 0; i < n; i++){
+            entry[i] = false;
+        }
+
+        int curr_min = __INT_MAX__;
+        for(int j = 0; j < n; j++){
+            if(!visited[j] && !entry[j] && g[currPos][j] != NON_EXIST_PATH && g[currPos][j] < curr_min){
+                curr_min = g[currPos][j];
+                good_entry = j;
             }
         }
-    }
 
-    if(flag == false){
-        return;
+        if(curr_min == __INT_MAX__){
+            return;
+        }
+
+        entry[good_entry] = true;
+        visited[good_entry] = true;
+        path[count] = good_entry;
+
+        NearestNeighbor(g, n, visited, good_entry, count + 1, path, finish);
+        visited[good_entry] = false;
     }
-    NeareestNeighbor(g, n,  visited, path, neighbor);
 }
 
 bool isValidState(int *state, int n, int **g){
@@ -105,24 +118,20 @@ bool isValidState(int *state, int n, int **g){
 
 int *getInitialState(int n, int **g){
 
-    int *path = (int *)malloc(sizeof(int) * n);
     bool *visited = (bool *)malloc(sizeof(bool) * n);
+    int *path = (int *)malloc(sizeof(int) * n);
     for(int i = 0; i < n; i++){
-        path[i] = -1;
         visited[i] = false;
+        path[i] = -1;
     }
-    NeareestNeighbor(g, n,  visited, path, 0);
+    visited[0] = true;
+    path[0] = 0;
+    bool finish = false;
+    NearestNeighbor(g, n, visited, 0, 1, path, &finish);
+    
     if(path == NULL) return NULL;   //time out
 
-    int *initial_state = (int *)malloc(sizeof(int) * n);
-    initial_state[0] = 0;
-    
-    int result = path[0];
-    int count = 1;
-    while(result != -1){
-        initial_state[count++] = result;
-        result = path[result];
-    }
+    int *initial_state = path;
     
     if(!isValidState(initial_state, n, g)){
         return NULL;
@@ -241,7 +250,7 @@ int *segment(int *state, int n){
 }
 
 int *getNeighbor(int *state, int n){
-    int op = getIntRandom(0, 3);
+    int op = getIntRandom(0, 2);
     int *result = NULL;
     switch (op){
     case 0:
@@ -271,7 +280,7 @@ int *getNeighbor(int *state, int n){
 //f(delta c, T) = min(1, exp(-delta C / T))
 double f(int delta_cost, double Temperature){
 	double temp = -1 * delta_cost / Temperature;
-	return 1 > exp(temp) ? exp(temp) : 1;
+	return exp(temp);
 }
 
 bool accept(unsigned long long int new_cost, unsigned long long int old_cost, double Temperature){
@@ -316,7 +325,9 @@ int *SimulateAnnealing(int *initial_state, int n, int **g){
 
             if(old_cost == new_cost){
                 canBreakCount += 1;
-                if(canBreakCount == 70) canBreak = true;
+                if(canBreakCount == 70){
+                    canBreak = true;
+                }
             }
             else{
                 canBreak = 0;
@@ -326,6 +337,8 @@ int *SimulateAnnealing(int *initial_state, int n, int **g){
                 *best_state_ptr = newState;
             }
         }
+        printf("\rCost = %lld", getCost(*best_state_ptr, n, g));
+        fflush(stdout);
         Current_Temperature = Current_Temperature * ALPHA;
     }
     return *best_state_ptr;
@@ -351,10 +364,14 @@ void outputNo(char *filename){
 
 int main(int argc, char *argv[]){
     start_time = clock();
-    // srand(time(NULL));
+    srand(time(NULL));
     int n, m;
     int **g = parser(argv[1], &n, &m);
+
     int *initial_state = getInitialState(n, g);
+
+    printf("Cost: %lld\n", getCost(initial_state, n, g));
+    printf("Valid? %d\n", isValidState(initial_state, n, g));
 
     if(initial_state){
         int *result = SimulateAnnealing(initial_state, n, g);

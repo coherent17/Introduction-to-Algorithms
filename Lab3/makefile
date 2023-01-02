@@ -29,5 +29,13 @@ do5:
 do6:
 	time ./$(BIN) ./Testcase/sample2.txt ./Testcase/sample2.out
 
+runall:
+	time ./$(BIN) ./Testcase/case0.txt ./Testcase/case0.out
+	time ./$(BIN) ./Testcase/case1.txt ./Testcase/case1.out
+	time ./$(BIN) ./Testcase/case2.txt ./Testcase/case2.out
+	time ./$(BIN) ./Testcase/case3.txt ./Testcase/case3.out
+	time ./$(BIN) ./Testcase/sample1.txt ./Testcase/sample1.out
+	time ./$(BIN) ./Testcase/sample2.txt ./Testcase/sample2.out
+
 clean:
 	rm $(BIN) Testcase/*.out
