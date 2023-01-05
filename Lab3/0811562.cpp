@@ -5,10 +5,9 @@
 #include <stdbool.h>
 
 #define NON_EXIST_PATH 100000000
-#define ANNEALING_TEMPERATURE 0.002
-#define TERMINATE_TEMPERATURE 0.00000000000000000000000000001
-#define ALPHA 0.99
-#define INNER_LOOP_TIMES 30000
+#define ANNEALING_TEMPERATURE 0.001
+#define TERMINATE_TEMPERATURE 0.000000000000000000000000000000000000001
+#define ALPHA 0.98
 
 
 int max_duration = 60;
@@ -48,6 +47,13 @@ int **parser(char *filename, int *nptr, int *mptr){
 }
 
 void NearestNeighbor(int **g, int n, bool *visited, int currPos, int count, int *path, bool *finish){
+    
+    clock_t current_time = clock();
+    if(((current_time - start_time) / CLOCKS_PER_SEC) > max_duration - 5){
+        path = NULL;
+        return;
+    }
+
 
     if(*finish == true){
         return;
@@ -203,16 +209,16 @@ int *insert(int *state, int n){
     return newState;
 }
 
-int *getNeighbor(int *state, int n){
-    int op = getIntRandom(0, 2);
+int *getNeighbor(int *state, int n, int seed){
+    int op = seed % 3;
     int *result = NULL;
     switch (op){
     case 0:
-        result = swap(state, n);
+        result = inverse(state, n);
         break;
     
     case 1:
-        result = inverse(state, n);
+        result = swap(state, n);
         break;
 
     case 2:
@@ -247,41 +253,29 @@ int *SimulateAnnealing(int *initial_state, int n, int **g){
     double Current_Temperature = ANNEALING_TEMPERATURE;
 
     int **best_state_ptr = &initial_state;
-    
     unsigned long long int best_cost = getCost(initial_state, n, g);
+    
 
     while(Current_Temperature > TERMINATE_TEMPERATURE){
 
-        int reject_count = 0;
-
-        //stop condition
-        clock_t current_time = clock();
-        if(((current_time - start_time) / CLOCKS_PER_SEC) > max_duration - 5){
-            break;
-        }
-
         //start inner loop
-        for(int i = 0; i < INNER_LOOP_TIMES; i++){
+        for(int i = 0; i < n * 70; i++){
 
-            int *newState = getNeighbor(*best_state_ptr, n);
+            //time out stop condition
+            clock_t current_time = clock();
+            if(((current_time - start_time) / CLOCKS_PER_SEC) > max_duration - 5){
+                break;
+            }
+
+            int *newState = getNeighbor(*best_state_ptr, n ,i);
             unsigned long long int old_cost = best_cost;
             unsigned long long int new_cost = getCost(newState, n, g);
 
             if(accept(new_cost, old_cost, Current_Temperature)){
                 *best_state_ptr = newState;
                 best_cost = new_cost;
-                reject_count = 0;
-            }
-            else{
-                reject_count++;
-                if(reject_count >= INNER_LOOP_TIMES /10){
-                    reject_count = 0;
-                    break;
-                }
             }
         }
-        printf("\rCost = %lld, reject_count = %5d, T = %.30f", getCost(*best_state_ptr, n, g), reject_count, Current_Temperature);
-        fflush(stdout);
         Current_Temperature = Current_Temperature * ALPHA;
     }
     return *best_state_ptr;
@@ -307,14 +301,10 @@ void outputNo(char *filename){
 
 int main(int argc, char *argv[]){
     start_time = clock();
-    srand(time(NULL));
     int n, m;
     int **g = parser(argv[1], &n, &m);
 
     int *initial_state = getInitialState(n, g);
-
-    printf("Cost: %lld\n", getCost(initial_state, n, g));
-    printf("Valid? %d\n", isValidState(initial_state, n, g));
 
     if(initial_state){
         int *result = SimulateAnnealing(initial_state, n, g);
