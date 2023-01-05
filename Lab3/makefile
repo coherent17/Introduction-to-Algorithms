@@ -20,11 +20,16 @@ do2:
 do3:
 	time ./$(BIN) ./Testcase/case3.txt ./Testcase/case3.out
 
+do4:
+	time ./$(BIN) ./Testcase/case4.txt ./Testcase/case4.out
+
 do5:
 	time ./$(BIN) ./Testcase/sample1.txt ./Testcase/sample1.out
 
 do6:
 	time ./$(BIN) ./Testcase/sample2.txt ./Testcase/sample2.out
+
+
 
 runall:
 	time ./$(BIN) ./Testcase/case0.txt ./Testcase/case0.out
