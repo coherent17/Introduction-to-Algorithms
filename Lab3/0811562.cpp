@@ -5,7 +5,7 @@
 #include <stdbool.h>
 
 #define NON_EXIST_PATH 100000000
-#define ANNEALING_TEMPERATURE 0.001
+#define ANNEALING_TEMPERATURE 0.0000001
 #define TERMINATE_TEMPERATURE 0.000000000000000000000000000000000000001
 #define ALPHA 0.98
 
@@ -151,7 +151,6 @@ unsigned long long int getCost(int *state, int n, int **g){
     return cost;
 }
 
-
 //define the neighborhod structure in simulate annealing
 int *inverse(int *state, int n){
     int index1 = getIntRandom(0, n - 2);
@@ -209,8 +208,8 @@ int *insert(int *state, int n){
     return newState;
 }
 
-int *getNeighbor(int *state, int n, int seed){
-    int op = seed % 3;
+int *getNeighbor(int *state, int n){
+    int op = getIntRandom(0, 2);
     int *result = NULL;
     switch (op){
     case 0:
@@ -258,24 +257,34 @@ int *SimulateAnnealing(int *initial_state, int n, int **g){
 
     while(Current_Temperature > TERMINATE_TEMPERATURE){
 
+        int reject_count = 0;
         //start inner loop
-        for(int i = 0; i < n * 70; i++){
-
+        for(int i = 0; i < n * 50; i++){
             //time out stop condition
             clock_t current_time = clock();
             if(((current_time - start_time) / CLOCKS_PER_SEC) > max_duration - 5){
                 break;
             }
 
-            int *newState = getNeighbor(*best_state_ptr, n ,i);
+            int *newState = getNeighbor(*best_state_ptr, n);
             unsigned long long int old_cost = best_cost;
             unsigned long long int new_cost = getCost(newState, n, g);
 
             if(accept(new_cost, old_cost, Current_Temperature)){
                 *best_state_ptr = newState;
                 best_cost = new_cost;
+                reject_count = 0;
+            }
+            else{
+                reject_count++;
+                if(reject_count >= n * 30){
+                    reject_count = 0;
+                    break;
+                }
             }
         }
+        printf("\r cost = %lld, %.30f", best_cost, Current_Temperature);
+        fflush(stdout);
         Current_Temperature = Current_Temperature * ALPHA;
     }
     return *best_state_ptr;
@@ -304,6 +313,7 @@ int main(int argc, char *argv[]){
     int n, m;
     int **g = parser(argv[1], &n, &m);
 
+    srand(time(NULL));
     int *initial_state = getInitialState(n, g);
 
     if(initial_state){

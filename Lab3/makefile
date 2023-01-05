@@ -20,9 +20,6 @@ do2:
 do3:
 	time ./$(BIN) ./Testcase/case3.txt ./Testcase/case3.out
 
-do4:
-	time ./$(BIN) ./Testcase/case4.txt ./Testcase/case4.out
-
 do5:
 	time ./$(BIN) ./Testcase/sample1.txt ./Testcase/sample1.out
 
