@@ -3,11 +3,15 @@
 #include <time.h>
 #include <math.h>
 #include <stdbool.h>
-#include <unistd.h>
 
-#define NON_EXIST_PATH 10000000
+#define NON_EXIST_PATH 100000000
+#define ANNEALING_TEMPERATURE 0.00002
+#define TERMINATE_TEMPERATURE 0.0000000000000000000000001
+#define ALPHA 0.99
+#define INNER_LOOP_TIMES 15000
 
-int max_duration = 120;
+
+int max_duration = 60;
 clock_t start_time;
 
 int getIntRandom(int lower, int upper){
@@ -43,16 +47,6 @@ int **parser(char *filename, int *nptr, int *mptr){
     return graph;
 }
 
-void printGraph(int **g, int n){
-    for(int i = 0; i < n; i++){
-        for(int j = 0; j < n; j++){
-            printf("%d ", g[i][j]);
-        }
-        printf("\n");
-    }
-    printf("\n");
-}
-
 void NearestNeighbor(int **g, int n, bool *visited, int currPos, int count, int *path, bool *finish){
 
     if(*finish == true){
@@ -68,8 +62,8 @@ void NearestNeighbor(int **g, int n, bool *visited, int currPos, int count, int 
     for(int i = 0; i < n; i++){
 
         bool *entry = (bool *)malloc(sizeof(bool) * n);
-        for(int i = 0; i < n; i++){
-            entry[i] = false;
+        for(int j = 0; j < n; j++){
+            entry[j] = false;
         }
 
         int curr_min = __INT_MAX__;
@@ -151,13 +145,6 @@ unsigned long long int getCost(int *state, int n, int **g){
     return cost;
 }
 
-void printState(int *state, int n){
-    for(int i = 0; i < n; i++){
-        printf("%d ", state[i]);
-    }
-    printf("\n");
-}
-
 
 //define the neighborhod structure in simulate annealing
 int *inverse(int *state, int n){
@@ -216,39 +203,6 @@ int *insert(int *state, int n){
     return newState;
 }
 
-int *segment(int *state, int n){
-    int index1 = getIntRandom(0, n - 1);
-    int index2 = getIntRandom(0, n - 1);
-
-    while(index1 == index2){
-        index2 = getIntRandom(0, n - 1);
-    }
-
-    int min = index1 < index2 ? index1 : index2;
-    int max = index1 > index2 ? index1 : index2;
-
-    int *subroute = (int *)malloc(sizeof(int) * (max- min + 1));
-    int subroute_index = 0;
-    for(int i = min; i <= max; i++){
-        subroute[subroute_index++] = state[i];
-    }
-
-    int *newState = (int *)malloc(sizeof(int) * n);
-    int newStateIndex = 0;
-
-    for(int i = 0; i < n; i++){
-        if(i < min || i > max){
-            newState[newStateIndex++] = state[i];
-        }
-    }
-
-    for(int i = 0; i < (max - min + 1); i++){
-        newState[newStateIndex++] = subroute[i];
-    }
-
-    return newState;
-}
-
 int *getNeighbor(int *state, int n){
     int op = getIntRandom(0, 2);
     int *result = NULL;
@@ -263,10 +217,6 @@ int *getNeighbor(int *state, int n){
 
     case 2:
         result = insert(state, n);
-        break;
-
-    case 3:
-        result = segment(state, n);
         break;
     
     default:
@@ -294,48 +244,35 @@ bool accept(unsigned long long int new_cost, unsigned long long int old_cost, do
 }
 
 int *SimulateAnnealing(int *initial_state, int n, int **g){
-    double ANNEALING_TEMPERATURE = 2;
-    double TERMINATE_TEMPERATURE = 0.0000000000000000000001;
-    double ALPHA = 0.95;
-    int INNER_LOOP_TIMES = n * 100;
     double Current_Temperature = ANNEALING_TEMPERATURE;
 
     int **best_state_ptr = &initial_state;
-
-    bool canBreak = false;
-    int canBreakCount = 0;
+    int **SA_state_ptr = &initial_state;
 
     while(Current_Temperature > TERMINATE_TEMPERATURE){
-        if(canBreak){
+
+
+        clock_t current_time = clock();
+        if(((current_time - start_time) / CLOCKS_PER_SEC) > max_duration - 5){
             break;
         }
-        unsigned long long int old_cost = 0;
-		unsigned long long int new_cost = 0;
 
         for(int i = 0; i < INNER_LOOP_TIMES; i++){
-            clock_t current_time = clock();
-            if(((current_time - start_time) / CLOCKS_PER_SEC) > max_duration - 5){
-                break;
-                canBreak = true;
-            }
 
-            int *newState = getNeighbor(*best_state_ptr, n);
-            old_cost = getCost(*best_state_ptr, n, g);
-            new_cost = getCost(newState, n, g);
 
-            if(old_cost == new_cost){
-                canBreakCount += 1;
-                if(canBreakCount == 70){
-                    canBreak = true;
-                }
-            }
-            else{
-                canBreak = 0;
-            }
+            int *newState = getNeighbor(*SA_state_ptr, n);
+            unsigned long long int old_cost = getCost(*best_state_ptr, n, g);
+            unsigned long long int new_cost = getCost(newState, n, g);
 
             if(accept(new_cost, old_cost, Current_Temperature)){
-                *best_state_ptr = newState;
+                //*best_state_ptr = newState;
+                *SA_state_ptr = newState;
             }
+
+            if(getCost(*best_state_ptr, n, g) > getCost(*SA_state_ptr, n, g)){
+                *best_state_ptr = *SA_state_ptr;
+            }
+
         }
         printf("\rCost = %lld", getCost(*best_state_ptr, n, g));
         fflush(stdout);
@@ -364,7 +301,7 @@ void outputNo(char *filename){
 
 int main(int argc, char *argv[]){
     start_time = clock();
-    srand(time(NULL));
+    //srand(time(NULL));
     int n, m;
     int **g = parser(argv[1], &n, &m);
 
