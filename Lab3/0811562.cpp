@@ -283,8 +283,6 @@ int *SimulateAnnealing(int *initial_state, int n, int **g){
                 }
             }
         }
-        printf("\r cost = %lld, %.30f", best_cost, Current_Temperature);
-        fflush(stdout);
         Current_Temperature = Current_Temperature * ALPHA;
     }
     return *best_state_ptr;
